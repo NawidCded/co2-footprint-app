@@ -1,0 +1,249 @@
+<!-- 
+  ========================================================================
+  FALLSTUDIE: IPWA01-01 – Programmierung von Webanwendungsoberflächen
+  PROJEKT: EcoTrack – NPO CO2-Footprint Transparenzportal
+  AUTOR: Nawid Samad
+  MATRIKELNUMMER: IU14093395 
+  DATUM: November 2026
+  GITHUB REPOSITORY: https://github.com/NawidCded/co2-footprint-app
+  
+  BESCHREIBUNG:
+  Clientseitige Webanweisung (Single-Page-App) ohne externe Frameworks.
+  Umsetzung von HTML5-Semantik, CSS Flexbox/Grid (responsive),
+  LTR/RTL-Schriftkultur-Umschaltung sowie XSS-Prävention (OWASP).
+  ========================================================================
+-->
+<!DOCTYPE html>
+<html lang="de" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Globales CO2-Footprint Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header mit Logo und Globaler Navigation -->
+    <header class="global-header">
+        <div class="header-container">
+            <div class="brand-logo">
+                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-9 9Z"/>
+                    <path d="M11 20v-5.5"/>
+                </svg>
+                <div class="brand-text">
+                    <span class="brand-name">EcoTrack</span>
+                    <span class="brand-tagline">NPO CO2-Transparenz</span>
+                </div>
+            </div>
+
+            <!-- Globale Navigation -->
+            <nav class="global-nav" aria-label="Globale Navigation">
+                <ul class="nav-list">
+                    <li><a href="#home" class="nav-link active">Startseite</a></li>
+                    <li><a href="#emissions-section" class="nav-link">Emissionsdaten</a></li>
+                    <li><a href="#about" class="nav-link">Über das Projekt</a></li>
+                    <li><a href="#security-demo" class="nav-link">XSS-Schutz</a></li>
+                </ul>
+            </nav>
+
+            <!-- LTR/RTL Schriftkultur Umschalter -->
+            <div class="culture-switcher">
+                <button id="rtl-toggle-btn" class="btn-switcher" title="Schriftkultur umschalten (LTR/RTL)">
+                    <span>🌐</span>
+                    <span id="switcher-label">Schriftkultur: LTR (Links nach Rechts)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container mit lokalem Menü und Content -->
+    <div class="app-layout">
+        <!-- Lokale Navigation (Responsive & RTL-fähig) -->
+        <aside class="local-sidebar" id="local-sidebar">
+            <div class="sidebar-header">
+                <h3>Lokales Menü</h3>
+            </div>
+            <nav class="local-nav" aria-label="Lokale Schnellnavigation">
+                <ul class="local-nav-list">
+                    <li><a href="#overview-card" class="local-link">📊 Übersicht & KPIs</a></li>
+                    <li><a href="#filter-controls" class="local-link">🔍 Filter & Suche</a></li>
+                    <li><a href="#data-table-container" class="local-link">📋 Datentabelle</a></li>
+                    <li><a href="#about" class="local-link">ℹ️ Über das Projekt</a></li>
+                    <li><a href="#security-demo" class="local-link">🛡️ XSS-Sicherheitscheck</a></li>
+                    <li><a href="#footer-legal" class="local-link">⚖️ Rechtliche Hinweise</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Hauptinhaltsbereich -->
+        <main class="main-content" id="main-content">
+            <section id="home" class="hero-card">
+                <h1>Transparenz für den Klimaschutz</h1>
+                <p>Unsere Non-Profit-Organisation stellt globale CO2-Emissionsdaten von Ländern und Großunternehmen zur Verfügung. Nutzen Sie unsere interaktive Plattform zum Filtern, Sortieren und Analysieren.</p>
+            </section>
+
+            <!-- KPI Cards -->
+            <section id="overview-card" class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-title">Erfasste Länder</span>
+                    <span class="kpi-value" id="kpi-countries">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Erfasste Unternehmen</span>
+                    <span class="kpi-value" id="kpi-companies">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Gesamtemissionen (Mio. t)</span>
+                    <span class="kpi-value" id="kpi-total-co2">0</span>
+                </div>
+            </section>
+
+            <!-- Emissionsdaten Sektion -->
+            <section id="emissions-section" class="data-section">
+                <div class="section-header">
+                    <h2>CO2-Emissionsdatenbank</h2>
+                    <p>Sichere Filterung und Sortierung ohne Sicherheitsrisiken</p>
+                </div>
+
+                <!-- Filter Controls -->
+                <div id="filter-controls" class="filter-bar">
+                    <div class="filter-group search-group">
+                        <label for="search-input">Suche (Land / Unternehmen):</label>
+                        <input type="text" id="search-input" placeholder="z. B. Deutschland oder Shell..." class="form-control">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="category-filter">Kategorie:</label>
+                        <select id="category-filter" class="form-control">
+                            <option value="all">Alle Kategorien</option>
+                            <option value="Land">Nur Länder</option>
+                            <option value="Unternehmen">Nur Unternehmen</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sector-filter">Sektor:</label>
+                        <select id="sector-filter" class="form-control">
+                            <option value="all">Alle Sektoren</option>
+                            <option value="Energie">Energie</option>
+                            <option value="Industrie">Industrie</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Technologie">Technologie</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group reset-group">
+                        <button id="reset-btn" class="btn btn-secondary">Filter zurücksetzen</button>
+                    </div>
+                </div>
+
+                <!-- Datentabelle -->
+                <div id="data-table-container" class="table-responsive">
+                    <table class="data-table" id="emissions-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="entity" class="sortable">Entität / Name <span class="sort-icon">↕</span></th>
+                                <th data-sort="type" class="sortable">Kategorie <span class="sort-icon">↕</span></th>
+                                <th data-sort="country" class="sortable">Land / Sitz <span class="sort-icon">↕</span></th>
+                                <th data-sort="sector" class="sortable">Sektor <span class="sort-icon">↕</span></th>
+                                <th data-sort="emissions" class="sortable numeric">CO2 (Mio. t/Jahr) <span class="sort-icon">↕</span></th>
+                                <th data-sort="year" class="sortable numeric">Bezugsjahr <span class="sort-icon">↕</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Dynamisch via app.js generiert -->
+                        </tbody>
+                    </table>
+                    <div id="no-results" class="no-results hidden">
+                        <p>Keine passenden Datensätze gefunden.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sektion: Über das Projekt -->
+            <section id="about" class="info-card">
+                <div class="section-header">
+                    <h2>ℹ️ Über das Projekt EcoTrack</h2>
+                    <p>Initiative für globale Klimatransparenz und quelloffene Umweltdaten</p>
+                </div>
+                <div class="about-grid">
+                    <div class="about-item">
+                        <h3>🌱 Unsere Mission</h3>
+                        <p>EcoTrack ist ein unabhängiges Non-Profit-Projekt mit dem Ziel, komplexe Daten zum weltweiten Treibhausgasausstoß leicht verständlich und barrierefrei für die Öffentlichkeit aufzubereiten. Bürgerinnen, Bürger, Journalisten und Wissenschaftler erhalten direkten Zugriff auf vergleichende Emissionswerte von Industrieunternehmen und Nationalstaaten.</p>
+                    </div>
+                    <div class="about-item">
+                        <h3>📊 Datenbasis & Methodik</h3>
+                        <p>Die aggregierten Kennzahlen basieren auf öffentlichen Veröffentlichungen, Nachhaltigkeitsberichten sowie wissenschaftlichen Schätzungen. Sämtliche Werte werden in Millionen Tonnen CO2-Äquivalent pro Jahr angegeben und standardisiert aufbereitet, um einen fairen und sachlichen Vergleich zu ermöglichen.</p>
+                    </div>
+                    <div class="about-item">
+                        <h3>🛠️ Technologische Umsetzung</h3>
+                        <p>Die Anwendung setzt auf modernste Webstandards: Ein semantisches HTML5-Fundament, ein flexibles CSS-Grid/Flexbox-System für responsive Endgeräte (Desktop, Tablet, Smartphone), dynamische Barrierefreiheit inklusive LTR/RTL-Schriftkultur-Umschaltung sowie konsequenten Schutz vor Code-Injektionen (XSS).</p>
+                    </div>
+                    <div class="about-item">
+                        <h3>🔓 Open Source & Neutralität</h3>
+                        <p>Als gemeinnützige Plattform garantieren wir absolute politische und kommerzielle Unabhängigkeit. Der Quellcode der Plattform ist quelloffen in unserem GitHub-Repository dokumentiert, um maximale Nachvollziehbarkeit und stetige Weiterentwicklung durch die Community zu sichern.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- XSS Demonstrator -->
+            <section id="security-demo" class="security-card">
+                <h3>🛡️ Demonstrator: Schutz vor Code-Injektion (XSS)</h3>
+                <p>Geben Sie beliebigen HTML/JS-Code ein. Die Anwendung rendert die Eingabe sicher als Text via <code>textContent</code>.</p>
+                <div class="demo-box">
+                    <div class="input-row">
+                        <input type="text" id="xss-input" placeholder="Test-Code eingeben..." class="form-control">
+                        <button id="xss-test-btn" class="btn btn-primary">Sicher Rendern</button>
+                    </div>
+                    <div class="output-box">
+                        <strong>Sichere Ausgabe:</strong>
+                        <div id="xss-output-safe" class="safe-render-area">(Noch keine Eingabe)</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer mit interaktiven rechtlichen Hinweisen -->
+    <footer class="global-footer" id="footer-legal">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h4>EcoTrack NPO</h4>
+                <p>Gemeinnützige Organisation für Transparenz im Klimaschutz.</p>
+            </div>
+            <div class="footer-links">
+                <ul class="legal-nav">
+                    <li><a href="#modal" class="legal-link" data-legal="impressum">Impressum</a></li>
+                    <li><a href="#modal" class="legal-link" data-legal="datenschutz">Datenschutzerklärung</a></li>
+                    <li><a href="#modal" class="legal-link" data-legal="haftung">Haftungsausschluss</a></li>
+                    <li><a href="#modal" class="legal-link" data-legal="kontakt">Kontakt & Feedback</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EcoTrack NPO. Erstellt im Rahmen der Fallstudie IPWA01-01.</p>
+        </div>
+    </footer>
+
+    <!-- Modal Dialog für Rechtliche Hinweise & Kontakt -->
+    <div id="legal-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Rechtliche Hinweise</h3>
+                <button id="modal-close-btn" class="modal-close" aria-label="Schließen">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body-content">
+                <!-- Dynamischer Inhalt wird hier eingefügt -->
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ok-btn" class="btn btn-secondary">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
